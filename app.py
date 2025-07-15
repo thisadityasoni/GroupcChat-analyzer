@@ -15,7 +15,8 @@ if uploaded_file is not None:
 
     
     user_list = df['user'].unique().tolist()
-    user_list.remove('group_notification')
+    if 'group_notification' in user_list:
+        user_list.remove('group_notification')
     user_list.sort()
     user_list.insert(0,"Overall")
 
@@ -82,10 +83,13 @@ if uploaded_file is not None:
             st.pyplot(fig)
 
         st.title("Weekly Activity Map")
-        user_heatmap = helper.activity_heatmap(selected_user,df)
-        fig,ax = plt.subplots()
-        ax = sns.heatmap(user_heatmap)
-        st.pyplot(fig)
+        user_heatmap = helper.activity_heatmap(selected_user, df)
+        if user_heatmap.empty:
+            st.write("No activity to display for the selected user.")
+        else:
+            fig, ax = plt.subplots()
+            sns.heatmap(user_heatmap, ax=ax)
+            st.pyplot(fig)
 
         # finding the busiest users in the group(Group level)
         if selected_user == 'Overall':
@@ -104,34 +108,40 @@ if uploaded_file is not None:
 
         # WordCloud
         st.title("Wordcloud")
-        df_wc = helper.create_wordcloud(selected_user,df)
-        fig,ax = plt.subplots()
-        ax.imshow(df_wc)
-        st.pyplot(fig)
+        df_wc = helper.create_wordcloud(selected_user, df)
+        if df_wc is not None:
+            fig, ax = plt.subplots()
+            ax.imshow(df_wc)
+            st.pyplot(fig)
+        else:
+            st.write("No words to display in the word cloud for the selected user.")
 
         # most common words
-        most_common_df = helper.most_common_words(selected_user,df)
-
-        fig,ax = plt.subplots()
-
-        ax.barh(most_common_df[0],most_common_df[1])
-        plt.xticks(rotation='vertical')
-
-        st.title('Most commmon words')
-        st.pyplot(fig)
+        most_common_df = helper.most_common_words(selected_user, df)
+        if not most_common_df.empty:
+            fig, ax = plt.subplots()
+            ax.barh(most_common_df[0], most_common_df[1])
+            plt.xticks(rotation='vertical')
+            st.title('Most common words')
+            st.pyplot(fig)
+        else:
+            st.title('Most common words')
+            st.write("No common words to display for the selected user.")
 
         # emoji analysis
-        emoji_df = helper.emoji_helper(selected_user,df)
+        emoji_df = helper.emoji_helper(selected_user, df)
         st.title("Emoji Analysis")
 
-        col1,col2 = st.columns(2)
-
-        with col1:
-            st.dataframe(emoji_df)
-        with col2:
-            fig,ax = plt.subplots()
-            ax.pie(emoji_df[1].head(),labels=emoji_df[0].head(),autopct="%0.2f")
-            st.pyplot(fig)
+        if not emoji_df.empty:
+            col1, col2 = st.columns(2)
+            with col1:
+                st.dataframe(emoji_df)
+            with col2:
+                fig, ax = plt.subplots()
+                ax.pie(emoji_df[1].head(), labels=emoji_df[0].head(), autopct="%0.2f")
+                st.pyplot(fig)
+        else:
+            st.write("No emojis to display for the selected user.")
 
 
         # Sentiment Analysis
@@ -148,14 +158,24 @@ if uploaded_file is not None:
         st.title("Sentiment Statistics")
         st.table(sentiment_counts)
 
-        # Export Data Button
-        if st.button("Export Data"):
-        # Save the DataFrame to a CSV file
-            df.to_csv('GroupChat Analyzer', index=False)
-
-        # Provide a download link to the user
-            st.markdown("### Download the analyzed data")
-            st.markdown("[Download CSV](sandbox:/Groupchat_analysis.csv)", unsafe_allow_html=True)
+        # Print button
+        st.title("Print Report")
+        print_button_html = f"""
+        <a href="javascript:window.print()" style="text-decoration: none;">
+            <button style="
+                display: inline-block;
+                padding: 0.5em 1em;
+                border: 1px solid #ccc;
+                border-radius: 0.25em;
+                background-color: #f0f0f0;
+                color: #333;
+                cursor: pointer;
+                text-align: center;">
+                Print this page
+            </button>
+        </a>
+        """
+        st.markdown(print_button_html, unsafe_allow_html=True)
 
 
 
