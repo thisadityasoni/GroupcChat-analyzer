@@ -1,6 +1,8 @@
 
 # GroupChat Analyzer
 
+**Live Demo:** [https://groupchatanalyzer.streamlit.app/](https://groupchatanalyzer.streamlit.app/)
+
 GroupChat Analyzer is a web application built with Streamlit to analyze and visualize data from group chat exports. The app allows users to upload chat data, visualize message statistics, analyze trends, and export the analyzed data.
 
 ## Tech Stack
